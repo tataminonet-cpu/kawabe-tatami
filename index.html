@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>和室リフォーム 見積もり</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -21,7 +21,7 @@
   --shadow: rgba(0,0,0,0.08);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; touch-action: manipulation; -webkit-text-size-adjust: 100%; }
 
 .header {
   background: var(--green-dark); color: white;
@@ -135,6 +135,17 @@ textarea { min-height: 80px; resize: vertical; }
 .otitle { font-size: 15px; font-weight: 500; }
 .onote { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .oprice { font-size: 14px; font-weight: 700; color: var(--amber); white-space: nowrap; }
+
+/* SELECT */
+.mat-select {
+  width: 100%; font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 500;
+  padding: 14px 16px; border: 2px solid var(--green-light); border-top: none;
+  border-radius: 0 0 8px 8px; background: white; color: var(--ink); outline: none;
+  cursor: pointer; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%235c7a4a' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px;
+}
+.mat-select:focus { border-color: var(--green); }
 
 /* SIZE GRID */
 .size-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 14px; border: 2px solid var(--green-light); border-top: none; border-radius: 0 0 8px 8px; background: white; }
@@ -513,7 +524,7 @@ function renderStep2(){
     <div class="card-sub">今回お見積もりする工事を選んでください（複数選べます）</div>
     <div class="genre-grid">${btns}</div>
     <div class="btn-row">
-      <button class="btn btn-back" onclick="goStep(2)">← 戻る</button>
+      <button class="btn btn-back" onclick="goStep(1)">← 戻る</button>
       <button class="btn btn-next" onclick="goS3()">次へ：詳細を選ぶ　→</button>
     </div>
   </div>`;
@@ -566,7 +577,7 @@ function renderStep3(){
     <div class="sbtn ${sel.size===s.id?'sel':''}" onclick="setSel('${gid}','size','${s.id}')">
       <div class="sn">${s.label}</div>
       <div class="sd">${s.note}</div>
-      <div class="sp">${s.add>0?'+B�'+fmt(s.add):s.add<0?'-¥'+fmt(Math.abs(s.add)):'標準'}</div>
+      <div class="sp">${s.add>0?'+¥'+fmt(s.add):s.add<0?'-¥'+fmt(Math.abs(s.add)):'標準'}</div>
     </div>`).join('');
 
   const isUragaeshi = gid==='tatami' && sel.material==='uragaeshi';
@@ -634,22 +645,21 @@ function renderStep3(){
           </div>`).join('')}
         </div>
         ${opt2.materials.length>0?`<div style="margin-bottom:10px;">
-          ${opt2.materials.map(m=>{
-            const p = item.size ? (opt2.priceMatrix[item.size]?.[m.id]||0) : 0;
-            return `<div class="opt ${item.material===m.id?'sel':''}" onclick="setItem('${gid}',${i},'material','${m.id}')" style="padding:10px 14px;">
-              <div class="oradio ${item.material===m.id?'on':''}"></div>
-              <div class="oinfo"><div class="otitle">${m.label}</div></div>
-              <div class="oprice">${p>0?'¥'+fmt(p)+'/枚':'サイズ選択後'}</div>
-            </div>`;
-          }).join('')}
+          <select class="mat-select" style="border-top:2px solid var(--green-light);border-radius:8px;" onchange="setItem('${gid}',${i},'material',this.value)">
+            <option value="">― 紙の種類を選択 ―</option>
+            ${opt2.materials.map(m=>{
+              const p = item.size ? (opt2.priceMatrix[item.size]?.[m.id]||0) : 0;
+              return `<option value="${m.id}" ${item.material===m.id?'selected':''}>${m.label}${p>0?' ／ ¥'+fmt(p)+'/枚':' ／ サイズ選択後'}</option>`;
+            }).join('')}
+          </select>
         </div>`:''}
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span style="font-size:14px;color:var(--muted);font-weight:700;">枚数</span>
-          <button onclick="setItemQtyDelta('${gid}',${i},-1)" style="width:38px;height:38px;border-radius:50%;border:2px solid var(--green);background:white;color:var(--green-dark);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">－</button>
-          <span style="font-size:26px;font-weight:700;color:var(--green-dark);font-family:'Noto Serif JP',serif;min-width:32px;text-align:center;">${item.qty||1}</span>
-          <button onclick="setItemQtyDelta('${gid}',${i},+1)" style="width:38px;height:38px;border-radius:50%;border:2px solid var(--green);background:white;color:var(--green-dark);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">＋</button>
+          <button type="button" onclick="setItemQtyDelta('${gid}',${i},-1)" style="width:38px;height:38px;border-radius:50%;border:2px solid var(--green);background:white;color:var(--green-dark);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;">－</button>
+          <span id="qty-${gid}-${i}" style="font-size:26px;font-weight:700;color:var(--green-dark);font-family:'Noto Serif JP',serif;min-width:32px;text-align:center;">${item.qty||1}</span>
+          <button type="button" onclick="setItemQtyDelta('${gid}',${i},+1)" style="width:38px;height:38px;border-radius:50%;border:2px solid var(--green);background:white;color:var(--green-dark);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;">＋</button>
           <span style="font-size:14px;color:var(--muted);">枚</span>
-          ${rowTotal>0?`<span style="font-size:13px;font-weight:700;color:var(--amber);">= ¥${fmt(rowTotal)}</span>`:''}
+          <span id="rt-${gid}-${i}" style="font-size:13px;font-weight:700;color:var(--amber);">${rowTotal>0?'= ¥'+fmt(rowTotal):''}</span>
         </div>
       </div>`;
     }).join('');
@@ -661,7 +671,7 @@ function renderStep3(){
 
       ${itemsHtml}
 
-      <button onclick="addItem('${gid}')" style="width:100%;padding:12px;border:2px dashed var(--green);background:transparent;border-radius:8px;font-size:14px;color:var(--green-dark);cursor:pointer;font-family:inherit;font-weight:500;margin-bottom:16px;">＋ 組み合わせり追加する</button>
+      <button onclick="addItem('${gid}')" style="width:100%;padding:12px;border:2px dashed var(--green);background:transparent;border-radius:8px;font-size:14px;color:var(--green-dark);cursor:pointer;font-family:inherit;font-weight:500;margin-bottom:16px;">＋ 組み合わせを追加する</button>
 
       ${gid!=='amido'?`<div class="sec-title">建て付け調整（オプション）</div>
       <div style="border:2px solid var(--green-light);border-top:none;border-radius:0 0 8px 8px;background:white;padding:14px;">
@@ -711,14 +721,12 @@ function renderStep3(){
 
     ${isTatami && !isUra && sel.shincho!==null ? `
     <div class="sec-title">② ${sel.shincho?'新調価格（表替え価格+¥10,000）':'表替え価格'}</div>
-    <div class="opts">
+    <select class="mat-select" onchange="setSel('tatami','material',this.value)">
+      <option value="">― 種類を選択 ―</option>
       ${OPTIONS.tatami.materials.filter(m=>sel.shincho ? m.id!=='uragaeshi' : true).map(m=>`
-      <div class="opt ${sel.material===m.id?'sel':''}" onclick="setSel('tatami','material','${m.id}')">
-        <div class="oradio ${sel.material===m.id?'on':''}"></div>
-        <div class="oinfo"><div class="otitle">${m.label}</div><div class="onote">${m.note}</div></div>
-        <div class="oprice">¥${fmt(m.add+(sel.shincho&&m.id!=='uragaeshi'?10000:0))}/枚</div>
-      </div>`).join('')}
-    </div>` : ''}
+        <option value="${m.id}" ${sel.material===m.id?'selected':''}>${m.label} ／ ¥${fmt(m.add+(sel.shincho&&m.id!=='uragaeshi'?10000:0))}/枚 ― ${m.note}</option>
+      `).join('')}
+    </select>` : ''}
 
     ${isTatami && isUra ? `
     <div class="sec-title">① 表替え価格</div>
@@ -767,7 +775,14 @@ function setItemQtyDelta(gid,i,d){
   if(!selections[gid]||!selections[gid].items[i]) return;
   const cur=selections[gid].items[i].qty||1;
   selections[gid].items[i].qty=Math.max(1,Math.min(99,cur+d));
-  const y=window.scrollY; renderSteps(); document.getElementById('content').innerHTML=renderStep3(); window.scrollTo({top:y});
+  const item=selections[gid].items[i];
+  const opt2=OPTIONS[gid];
+  const matKey=gid==='amido'?'only':item.material;
+  const rowTotal=(item.size&&matKey&&item.qty)?(opt2.priceMatrix[item.size]?.[matKey]||0)*item.qty:0;
+  const qEl=document.getElementById(`qty-${gid}-${i}`);
+  const rEl=document.getElementById(`rt-${gid}-${i}`);
+  if(qEl) qEl.textContent=item.qty;
+  if(rEl) rEl.textContent=rowTotal>0?'= ¥'+fmt(rowTotal):'';
 }
 function addItem(gid){
   const defMat = gid==='amido'?'only':null;
@@ -999,6 +1014,18 @@ function render(){
   window.scrollTo({top:scrollY});
 }
 render();
+
+// iOS ダブルタップズーム強制無効化
+let __lastTouch = 0;
+document.addEventListener('touchend', function(e){
+  const now = Date.now();
+  if(now - __lastTouch <= 400){
+    e.preventDefault();
+    if(e.target && typeof e.target.click === 'function') e.target.click();
+  }
+  __lastTouch = now;
+}, {passive:false});
+document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
 </script>
 </body>
 </html>
