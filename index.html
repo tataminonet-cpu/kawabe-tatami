@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet"></noscript>
 <style>
 :root {
   --bg: #f7f3ec;
@@ -507,7 +508,7 @@ function goS35(){
     if(!s.workType || !s.size) return true;
     return !s.material;
   });
-  if(inc){ const g=GENRES.find(x=>x.id===inc); alert(`「${g.name}」のサイズ・施工内容・素材を全て選んでください`); activeGenre=inc; render(); return; }
+  if(inc){ const gen=GENRES.find(x=>x.id===inc); alert(`「${gen.name}」のサイズ・施工内容・素材を全て選んでください`); activeGenre=inc; render(); return; }
   goStep(3.5);
 }
 function goS4(){ goStep(4); }
@@ -954,16 +955,29 @@ function buildSummaryBlocks(genreList){
 }
 
 function renderStep4(){
-  const total=grandTotal();
+  const base=grandTotal();
+  const shokeihi=Math.floor(base*0.05);
+  const total=base+shokeihi;
   const tax=Math.floor(total*0.1);
   const withTax=total+tax;
 
   const customerBlock=`
 `;
 
+  const shokeihiBlock=`<div class="sum-block">
+    <div class="sum-head">📋 諸経費</div>
+    <div class="sum-rows">
+      <div class="sum-row">
+        <span class="lb">諸経費</span>
+        <span class="vl" style="color:var(--muted);font-size:12px;">工事合計の5%</span>
+        <span class="pr">¥${fmt(shokeihi)}</span>
+      </div>
+    </div>
+  </div>`;
+
   const totalBlock=`
     <div class="total-card">
-      <div><div class="tl">合計金額（税込）</div><div class="ts">全工事合計 消費税10%含む</div></div>
+      <div><div class="tl">合計金額（税込）</div><div class="ts">全工事合計＋諸経費　消費税10%含む</div></div>
       <div><div class="ta">¥${fmt(withTax)}</div><div class="tx">税抜 ¥${fmt(total)}　消費税 ¥${fmt(tax)}</div></div>
     </div>
     <div class="notice">
@@ -978,6 +992,7 @@ function renderStep4(){
 
     ${customerBlock}
     ${buildSummaryBlocks(selectedGenres)}
+    ${shokeihiBlock}
     ${totalBlock}
 
     <div class="card-heading no-print" style="margin-top:28px;font-size:16px;">🖨 PDF出力の形式を選ぶ</div>
